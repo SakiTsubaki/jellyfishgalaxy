@@ -1,557 +1,107 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Prototipo biblioteca</title>
-  <style>
-    :root{
-      --bg0:#0b1020;
-      --bg1:#0f1731;
-      --card: rgba(255,255,255,.06);
-      --card2: rgba(255,255,255,.09);
-      --stroke: rgba(255,255,255,.12);
-      --text:#eaf0ff;
-      --muted: rgba(234,240,255,.72);
-      --accent:#7c5cff;
-      --accent2:#46e6b0;
-      --shadow: 0 18px 50px rgba(0,0,0,.42);
-      --r16: 16px;
-      --r22: 22px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jellyfish Galaxy | Portfolio & Vlog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
 
-    *{ box-sizing:border-box }
-    html,body{ height:100% }
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      color:var(--text);
-      background:
-        radial-gradient(900px 700px at 15% 10%, rgba(124,92,255,.22), transparent 55%),
-        radial-gradient(900px 700px at 85% 20%, rgba(70,230,176,.14), transparent 55%),
-        radial-gradient(1200px 900px at 40% 95%, rgba(255,255,255,.06), transparent 60%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
-      overflow-x:hidden;
-    }
+        body {
+            background-color: #050505;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(120, 50, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.1) 0%, transparent 40%);
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+        }
 
-    .wrap{
-      width:min(1100px, 92vw);
-      margin: 28px auto 56px;
-    }
+        .neo-card {
+            background: #111;
+            border: 4px solid #fff;
+            box-shadow: 8px 8px 0px #7832ff; /* Sombra rígida brutalista */
+            transition: all 0.2s ease;
+        }
 
-    header{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:18px;
-      margin-bottom:18px;
-    }
+        .neo-card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px #00c8ff;
+        }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-    .logo{
-      width:44px;height:44px;border-radius:14px;
-      background:
-        radial-gradient(22px 22px at 30% 30%, rgba(255,255,255,.30), transparent 55%),
-        linear-gradient(135deg, rgba(124,92,255,.95), rgba(70,230,176,.75));
-      box-shadow: 0 10px 30px rgba(124,92,255,.18);
-      border: 1px solid rgba(255,255,255,.20);
-    }
-    h1{
-      margin:0;
-      font-size: 20px;
-      letter-spacing:.2px;
-      line-height:1.1;
-    }
-    .sub{
-      margin: 3px 0 0;
-      font-size: 13px;
-      color:var(--muted);
-    }
+        .glitch-text {
+            text-transform: uppercase;
+            font-weight: 900;
+            text-shadow: 2px 2px #7832ff, -2px -2px #00c8ff;
+        }
 
-    .toolbar{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-      align-items:center;
-    }
-
-    .field{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.05);
-      border:1px solid var(--stroke);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 12px 30px rgba(0,0,0,.22);
-      transition: transform .18s ease, border-color .18s ease, background .18s ease;
-    }
-    .field:focus-within{
-      transform: translateY(-1px);
-      border-color: rgba(124,92,255,.6);
-      background: rgba(255,255,255,.07);
-    }
-    .field input{
-      width: 260px;
-      max-width: 60vw;
-      background:transparent;
-      border:0;
-      outline:0;
-      color:var(--text);
-      font-size:14px;
-    }
-    .field svg{ opacity:.85 }
-
-    .pill{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.04);
-      color: var(--muted);
-      padding: 9px 12px;
-      border-radius: 999px;
-      cursor:pointer;
-      user-select:none;
-      transition: transform .18s ease, background .18s ease, border-color .18s ease, color .18s ease;
-    }
-    .pill:hover{ transform: translateY(-1px); background: rgba(255,255,255,.06); color: var(--text); }
-    .pill.active{
-      border-color: rgba(70,230,176,.55);
-      background: rgba(70,230,176,.10);
-      color: var(--text);
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 14px;
-      margin-top: 18px;
-    }
-    .card{
-      grid-column: span 4;
-      padding: 14px;
-      border-radius: var(--r22);
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
-      border:1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      position:relative;
-      overflow:hidden;
-      cursor:pointer;
-      transform: translateZ(0);
-      transition: transform .22s ease, border-color .22s ease, background .22s ease;
-      animation: rise .5s ease both;
-    }
-    .card:hover{
-      transform: translateY(-4px);
-      border-color: rgba(255,255,255,.18);
-      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
-    }
-    .card::before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background:
-        radial-gradient(320px 220px at var(--mx, 50%) var(--my, 30%), rgba(124,92,255,.18), transparent 55%),
-        radial-gradient(280px 200px at calc(var(--mx, 50%) + 10%) calc(var(--my, 30%) + 20%), rgba(70,230,176,.12), transparent 55%);
-      opacity:.0;
-      transition: opacity .22s ease;
-      pointer-events:none;
-    }
-    .card:hover::before{ opacity:1; }
-
-    .row{
-      display:flex;
-      gap: 14px;
-      align-items:flex-start;
-      position:relative;
-      z-index:1;
-    }
-
-    .cover{
-      width: 66px;
-      height: 92px;
-      border-radius: 14px;
-      background:
-        radial-gradient(16px 16px at 30% 25%, rgba(255,255,255,.35), transparent 55%),
-        linear-gradient(135deg, rgba(124,92,255,.95), rgba(70,230,176,.65));
-      border: 1px solid rgba(255,255,255,.22);
-      box-shadow: 0 14px 30px rgba(0,0,0,.35);
-      position:relative;
-      flex: 0 0 auto;
-    }
-    .cover::after{
-      content:"";
-      position:absolute;
-      right: 10px; top: 10px; bottom: 10px;
-      width: 2px;
-      border-radius:2px;
-      background: rgba(255,255,255,.22);
-      opacity:.65;
-    }
-
-    .meta{ flex:1; min-width:0; }
-    .title{
-      margin: 2px 0 0;
-      font-size: 15px;
-      line-height:1.25;
-      letter-spacing:.1px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .author{
-      margin: 6px 0 0;
-      font-size: 13px;
-      color: var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .tags{
-      margin-top: 10px;
-      display:flex;
-      flex-wrap:wrap;
-      gap: 6px;
-    }
-    .tag{
-      font-size: 12px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      color: rgba(234,240,255,.80);
-    }
-
-    .progress{
-      margin-top: 12px;
-      height: 8px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
-      overflow:hidden;
-      position:relative;
-      z-index:1;
-    }
-    .bar{
-      height:100%;
-      width: var(--p, 40%);
-      border-radius: 999px;
-      background: linear-gradient(90deg, rgba(124,92,255,1), rgba(70,230,176,1));
-      box-shadow: 0 10px 25px rgba(124,92,255,.22);
-    }
-
-    @keyframes rise{
-      from{ opacity:0; transform: translateY(10px); }
-      to{ opacity:1; transform: translateY(0); }
-    }
-
-    /* Responsive */
-    @media (max-width: 940px){
-      .card{ grid-column: span 6; }
-      .field input{ width: 220px; }
-    }
-    @media (max-width: 620px){
-      header{ align-items:flex-start; flex-direction:column; }
-      .toolbar{ justify-content:flex-start; }
-      .card{ grid-column: span 12; }
-      .field{ width:100%; }
-      .field input{ width: 100%; }
-    }
-
-    /* Modal */
-    .backdrop{
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding: 18px;
-      z-index: 50;
-    }
-    .backdrop.show{ display:flex; }
-
-    .modal{
-      width:min(720px, 96vw);
-      border-radius: 22px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: linear-gradient(180deg, rgba(20,28,56,.92), rgba(14,20,44,.88));
-      box-shadow: 0 30px 90px rgba(0,0,0,.55);
-      backdrop-filter: blur(14px);
-      overflow:hidden;
-      transform: translateY(6px);
-      opacity:0;
-      animation: pop .18s ease forwards;
-    }
-    @keyframes pop{ to{ transform: translateY(0); opacity:1; } }
-
-    .modalHead{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap: 12px;
-      padding: 16px 16px 0;
-    }
-    .x{
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      width: 36px; height: 36px;
-      border-radius: 12px;
-      cursor:pointer;
-    }
-    .modalBody{
-      padding: 12px 16px 16px;
-      display:grid;
-      grid-template-columns: 120px 1fr;
-      gap: 14px;
-    }
-    .bigCover{
-      width:120px; height:168px;
-      border-radius: 18px;
-      border:1px solid rgba(255,255,255,.18);
-      box-shadow: 0 18px 45px rgba(0,0,0,.45);
-      background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(70,230,176,.65));
-      position:relative;
-      overflow:hidden;
-    }
-    .bigCover::before{
-      content:"";
-      position:absolute; inset:-30%;
-      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 55%);
-      transform: rotate(12deg);
-    }
-    .desc{
-      margin: 8px 0 0;
-      color: rgba(234,240,255,.78);
-      line-height: 1.55;
-      font-size: 14px;
-    }
-    .actions{
-      margin-top: 12px;
-      display:flex;
-      flex-wrap:wrap;
-      gap: 10px;
-    }
-    .btn{
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 14px;
-      cursor:pointer;
-      transition: transform .18s ease, background .18s ease, border-color .18s ease;
-    }
-    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.08); }
-    .btn.primary{
-      border-color: rgba(124,92,255,.55);
-      background: rgba(124,92,255,.18);
-    }
-
-    .footerNote{
-      margin-top: 16px;
-      color: rgba(234,240,255,.55);
-      font-size: 12px;
-    }
-  </style>
+        /* Scrollbar brutalista */
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #fff; border: 3px solid #7832ff; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700;900&display=swap" rel="stylesheet">
 </head>
-<body>
-  <div class="wrap">
-    <header>
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div>
-          <h1>Prototipo biblioteca</h1>
-          <div class="sub">Prototipo UX - UI</div>
-        </div>
-      </div>
+<body class="p-6 md:p-12">
 
-      <div class="toolbar">
-        <div class="field">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/>
-            <path d="M16.6 16.6 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <input id="q" placeholder="Buscar libro, autor, género…" autocomplete="off" />
-        </div>
-
-        <button class="pill active" data-filter="all">Todos</button>
-        <button class="pill" data-filter="Fábulas">Fábulas</button>
-        <button class="pill" data-filter="Cuentos">Cuentos</button>
-        <button class="pill" data-filter="Contempo">Contemporáneos</button>
-      </div>
+    <header class="mb-16">
+        <h1 class="text-6xl md:text-8xl glitch-text mb-4">JELLYFISH GALAXY</h1>
+        <p class="text-xl md:text-2xl border-2 border-white inline-block px-4 py-2 bg-white text-black font-bold">
+            UI/UX DESIGNER // FRONT-END DEV // COSMIC DRIFTER
+        </p>
     </header>
 
-    <section class="grid" id="grid"></section>
+    <main class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-    <div class="footerNote">
-      Esto es solamente el prototipado.
-    </div>
-  </div>
-
-  <!-- Modal -->
-  <div class="backdrop" id="backdrop" role="dialog" aria-modal="true" aria-label="Book details">
-    <div class="modal" id="modal">
-      <div class="modalHead">
-        <div>
-          <div class="sub" id="mTagline">Detalles del libro</div>
-          <h2 style="margin:6px 0 0; font-size:18px; letter-spacing:.1px;" id="mTitle"></h2>
-          <div class="author" id="mAuthor" style="margin-top:6px;"></div>
-        </div>
-        <button class="x" id="closeBtn" aria-label="Close">✕</button>
-      </div>
-      <div class="modalBody">
-        <div class="bigCover" id="mCover" aria-hidden="true"></div>
-        <div>
-          <div class="tags" id="mTags"></div>
-          <p class="desc" id="mDesc"></p>
-          <div class="actions">
-            <button class="btn primary" id="readBtn">Continuar leyendo</button>
-            <button class="btn" id="saveBtn">Guardar en mi lista</button>
-            <button class="btn" id="shareBtn">Compartir</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const BOOKS = [
-      { id: 1, title: "El lobo bobo y la zorra astuta", author: "Fernán Caballero", tags: ["Fábulas"], progress: 72,
-        desc: "Fábula protagonizada por un ingenuo lobo y una astuta zorra, cuyas interacciones resaltan la importancia del ingenio frente a la fuerza bruta, destacando con situaciones entretenidas valiosas enseñanzas sobre la prudencia, la inteligencia y la cautela en las decisiones de la vida cotidiana." },
-      { id: 2, title: "El paraíso de los gatos", author: "Émile Zola", tags: ["Cuentos"], progress: 41,
-        desc: "Cuento que explora la vida secreta de los gatos, mostrándolos como criaturas astutas y libres que encuentran su propio edén lejos de los humanos. Con ironía y observación aguda, se revela un mundo paralelo donde reinan el instinto, la independencia y el placer por la libertad." },
-      { id: 3, title: "Fábulas literarias", author: "Tomás de Iriarte", tags: ["Fábulas"], progress: 18,
-        desc: "Composiciones en verso que transmiten enseñanzas morales y reflexiones sobre la conducta humana, combinando ingenio, crítica y humor para retratar virtudes y defectos a través de personajes simbólicos y situaciones que invitan a la reflexión." },
-      { id: 4, title: "El canto del Sombrerón", author: "Arturo Arroyo", tags: ["Cuentos", "Contempo"], progress: 56,
-        desc: "Esta leyenda cuenta la historia de Ñito, un niño muy travieso y desobediente cuyo comportamiento lo lleva por un misterioso camino." },
-      { id: 5, title: "Un camino de leyenda", author: "Alejandro Herrerías", tags: ["Contempo"], progress: 88,
-        desc: "En esta novela gráfica, Ángel, un joven pintor, camina solo junto a la carretera rumbo al pueblo vecino, donde requieren de sus servicios en la parroquia. En el camino, mientras se va haciendo tarde, conversa con algunos personajes misterioso, lo cual lo lleva a replantearse el rumbo de su vida." },
-      { id: 6, title: "Las vocales juguetonas", author: "Arturo Arroyo", tags: ["Cuentos", "Contempo"], progress: 33,
-        desc: "Descubre a los divertidos habitantes de un jardín y a los simpáticos monstruos que hacen travesurras. Todos ellos cantan y juegan con las cinco vocales: a, e, i, o, u." }
-    ];
-
-    const grid = document.getElementById("grid");
-    const q = document.getElementById("q");
-    const pills = [...document.querySelectorAll(".pill")];
-
-    const backdrop = document.getElementById("backdrop");
-    const closeBtn = document.getElementById("closeBtn");
-
-    const mTitle = document.getElementById("mTitle");
-    const mAuthor = document.getElementById("mAuthor");
-    const mTags = document.getElementById("mTags");
-    const mDesc = document.getElementById("mDesc");
-    const mCover = document.getElementById("mCover");
-
-    let state = { filter: "all", query: "" };
-
-    function hueFromId(id){
-      // stable nice gradients
-      const a = (id * 67) % 360;
-      const b = (a + 120) % 360;
-      return { a, b };
-    }
-
-    function render(){
-      grid.innerHTML = "";
-
-      const filtered = BOOKS.filter(b => {
-        const byFilter = (state.filter === "all") || b.tags.includes(state.filter);
-        const hay = (b.title + " " + b.author + " " + b.tags.join(" ")).toLowerCase();
-        const byQuery = hay.includes(state.query.toLowerCase());
-        return byFilter && byQuery;
-      });
-
-      filtered.forEach((b, i) => {
-        const {a,b:bb} = hueFromId(b.id);
-
-        const card = document.createElement("article");
-        card.className = "card";
-        card.style.animationDelay = (i * 35) + "ms";
-        card.innerHTML = `
-          <div class="row">
-            <div class="cover" style="background:
-              radial-gradient(16px 16px at 30% 25%, rgba(255,255,255,.35), transparent 55%),
-              linear-gradient(135deg, hsla(${a}, 95%, 65%, .95), hsla(${bb}, 90%, 55%, .65));"></div>
-            <div class="meta">
-              <div class="title" title="${escapeHtml(b.title)}">${escapeHtml(b.title)}</div>
-              <div class="author" title="${escapeHtml(b.author)}">${escapeHtml(b.author)}</div>
-              <div class="tags">${b.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
-              <div class="progress" aria-label="Reading progress">
-                <div class="bar" style="--p:${b.progress}%"></div>
-              </div>
+        <section class="neo-card p-8 md:col-span-2">
+            <h2 class="text-3xl font-black mb-6 border-b-4 border-white pb-2">_CURRÍCULUM_VITAE</h2>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl font-bold text-purple-400">EXPERIENCIA</h3>
+                    <p class="mt-2">• Diseñando interfaces intergalácticas con React & Tailwind.</p>
+                    <p>• Especialista en sistemas de diseño modulares.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-cyan-400">SKILLS</h3>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        <span class="border-2 border-white px-2 py-1 text-sm font-bold">FIGMA</span>
+                        <span class="border-2 border-white px-2 py-1 text-sm font-bold">NEXT.JS</span>
+                        <span class="border-2 border-white px-2 py-1 text-sm font-bold">CSS/GSAP</span>
+                    </div>
+                </div>
             </div>
-          </div>
-        `;
+        </section>
 
-        card.addEventListener("mousemove", (e) => {
-          const r = card.getBoundingClientRect();
-          const mx = ((e.clientX - r.left) / r.width) * 100;
-          const my = ((e.clientY - r.top) / r.height) * 100;
-          card.style.setProperty("--mx", mx + "%");
-          card.style.setProperty("--my", my + "%");
-        });
+        <section class="neo-card p-8 bg-purple-900/20">
+            <h2 class="text-3xl font-black mb-6 border-b-4 border-white pb-2">VLOG_LOG</h2>
+            <p class="mb-6 italic italic">"Bitácora espacial sobre diseño y tecnología."</p>
+            <ul class="space-y-4">
+                <li>
+                    <a href="#" class="block p-4 border-2 border-white hover:bg-white hover:text-black transition-colors font-bold">
+                        > NUEVO VIDEO: Tendencias 2026
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="block p-4 border-2 border-white hover:bg-white hover:text-black transition-colors font-bold">
+                        > SETUP: Mi estación lunar
+                    </a>
+                </li>
+            </ul>
+        </section>
 
-        card.addEventListener("click", () => openModal(b));
-        grid.appendChild(card);
-      });
-    }
+        <section class="neo-card p-8 md:col-span-3 bg-white text-black">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <h2 class="text-4xl font-black italic">¿LISTA PARA EL DESPEGUE?</h2>
+                <a href="mailto:hola@jellyfishgalaxy.net" class="text-xl font-bold underline decoration-4 underline-offset-8">
+                    HOLA@JELLYFISHGALAXY.NET
+                </a>
+            </div>
+        </section>
 
-    function openModal(book){
-      const {a,b} = hueFromId(book.id);
-      mTitle.textContent = book.title;
-      mAuthor.textContent = book.author;
-      mDesc.textContent = book.desc;
+    </main>
 
-      mTags.innerHTML = book.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("");
+    <footer class="mt-16 text-sm opacity-50 uppercase tracking-widest text-center">
+        © 2026 Jellyfish Galaxy // Transmitiendo desde el borde exterior
+    </footer>
 
-      mCover.style.background =
-        `radial-gradient(26px 26px at 30% 25%, rgba(255,255,255,.35), transparent 55%),
-         linear-gradient(135deg, hsla(${a},95%,65%,.95), hsla(${b},90%,55%,.65))`;
-
-      backdrop.classList.add("show");
-      document.body.style.overflow = "hidden";
-    }
-
-    function closeModal(){
-      backdrop.classList.remove("show");
-      document.body.style.overflow = "";
-    }
-
-    function escapeHtml(s){
-      return String(s).replace(/[&<>"']/g, c => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
-      }[c]));
-    }
-
-    q.addEventListener("input", () => {
-      state.query = q.value.trim();
-      render();
-    });
-
-    pills.forEach(p => {
-      p.addEventListener("click", () => {
-        pills.forEach(x => x.classList.remove("active"));
-        p.classList.add("active");
-        state.filter = p.dataset.filter;
-        render();
-      });
-    });
-
-    closeBtn.addEventListener("click", closeModal);
-    backdrop.addEventListener("click", (e) => { if (e.target === backdrop) closeModal(); });
-    window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
-
-    // demo actions
-    document.getElementById("readBtn").addEventListener("click", () => alert("Prototype: Continue reading…"));
-    document.getElementById("saveBtn").addEventListener("click", () => alert("Prototype: Saved!"));
-    document.getElementById("shareBtn").addEventListener("click", () => alert("Prototype: Share link copied (not really)."));
-
-    render();
-  </script>
 </body>
 </html>
