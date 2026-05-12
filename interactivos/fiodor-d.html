@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+<link rel="icon" href="../favicon/jellyfish-galaxy-ico.ico" type="image/ico">
+
+<title>Crea un personaje dostoievskiano</title>
+<style>
+  :root {
+    /* Jellyfish Galaxy Palette + Dostoievski Mood */
+    --bg: #0d0a14; /* Negro profundo azulado */
+    --panel: #16121f;
+    --card: #1f1a2e;
+    --accent: #ff00ff; /* Rosa neón (Jellyfish) */
+    --accent-secondary: #00f2ff; /* Cian eléctrico */
+    --muted: #a098b5;
+    --text: #e0def4;
+    --border: rgba(255, 0, 255, 0.2);
+
+    /* Tipografía: Clásica pero legible */
+    --font-serif: "Georgia", "Times New Roman", serif;
+    --font-sans: "Segoe UI", Roboto, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(circle at 50% 50%, rgba(255, 0, 255, 0.05) 0%, transparent 80%),
+      url("https://www.transparenttextures.com/patterns/stardust.png"); /* Efecto galaxia/polvo antiguo */
+    color: var(--text);
+    font-family: var(--font-sans);
+  }
+
+  header {
+    padding: 30px 24px;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(22, 18, 31, 0.9) 0%, transparent 100%);
+    border-bottom: 2px double var(--border);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 28px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+  }
+
+  .desc {
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--accent-secondary);
+    font-size: 14px;
+    margin-top: 8px;
+    opacity: 0.8;
+  }
+
+  .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+
+  .panel {
+    background: var(--panel);
+    padding: 25px;
+    border-radius: 4px; /* Bordes más rectos para toque clásico */
+    box-shadow: 20px 20px 0px rgba(0, 242, 255, 0.05); /* Sombra estilo retro-futurista */
+    border: 1px solid var(--border);
+    position: relative;
+  }
+
+  /* Adorno en las esquinas estilo libro antiguo */
+  .panel::before {
+    content: "◈";
+    position: absolute;
+    top: 5px; left: 5px;
+    color: var(--border);
+  }
+
+  .module-title {
+    font-family: var(--font-serif);
+    color: var(--accent-secondary);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: flex-start;
+  margin-top: 14px;
+}
+
+  .card {
+    background: var(--card);
+      padding: 15px;
+      border: 1px solid var(--border);
+      width: 150px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+}
+  }
+
+  .card:hover {
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+    transform: translateY(-5px);
+  }
+
+  .trait {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    color: #fff;
+    margin-top: 8px;
+    font-size: 15px;
+  }
+
+  .btn {
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 0;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 4px 4px 0px var(--accent-secondary);
+  }
+
+  .btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--accent-secondary);
+    color: var(--accent-secondary);
+    padding: 9px 15px;
+    border-radius: 0;
+  }
+
+  .output {
+    font-family: var(--font-serif);
+    line-height: 1.6;
+    font-size: 16px;
+    background: rgba(0,0,0,0.3);
+    border-left: 3px solid var(--accent);
+    padding: 20px;
+    color: #d1d1d1;
+  }
+
+  select, input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Crea un personaje dostoievskiano</h1>
+    <div class="desc">Herramienta para robar rasgos (cartas), generar nombre, biografía, conflicto y un monólogo final.</div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="panel" id="modo6">
+    <h2 class="module-title">Crea tu personaje</h2>
+
+    <div class="flex" style="align-items:center;">
+      <label style="margin-right:10px;">Número de cartas</label>
+      <select id="numCards" style="width:72px;">
+        <option>3</option>
+        <option selected>4</option>
+        <option>5</option>
+      </select>
+      <button class="btn" id="draw">Robar cartas</button>
+      <button class="btn-ghost" id="rerollTraits">Volver a mezclar</button>
+    </div>
+
+    <div class="cards" id="cardsArea" aria-live="polite" style="margin-top:14px;"></div>
+
+    <div style="margin-top:12px;">
+      <label>Nombre (generar automático)</label>
+      <div class="flex" style="margin-top:6px;">
+        <input id="charName" placeholder="Pulsa 'Generar nombre' o escribe uno..." style="flex:1;" />
+        <button class="btn-ghost" id="genName" style="margin-left:8px;">Generar nombre</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <label>Ocupación / posición social</label>
+      <select id="occupation" style="width:100%;">
+        <option>Estudiante pobre</option>
+        <option>Funcionario menor</option>
+        <option selected>Comerciante de empeños</option>
+        <option>Monje novicio</option>
+        <option>Jornalero</option>
+        <option>Artista fracasado</option>
+        <option>Exconvicto</option>
+      </select>
+    </div>
+
+    <div class="controls" style="margin-top:12px;">
+      <button class="btn" id="generateCharacter">Generar biografía y conflicto</button>
+      <button class="btn-ghost" id="generateMonologue">Generar monólogo</button>
+      <button class="btn-ghost" id="exportJSON">Exportar JSON</button>
+      <button class="btn-ghost" id="copyOutput">Copiar salida</button>
+    </div>
+
+    <div id="characterOutput" class="output" aria-live="polite">Robar cartas para empezar a crear un personaje.</div>
+  </section>
+</main>
+
+<!--<footer>
+  Abre este archivo en tu navegador. Si quieres que guarde personajes en el navegador (localStorage) o añada más rasgos y plantillas, lo implemento a continuación.
+</footer> -->
+
+<script>
+/* --- Datos y utilidades --- */
+const traitDeck = [
+  "Culpa persistente", "Fanatismo religioso", "Hipocresía social", "Miseria económica",
+  "Orgullo herido", "Misericordia impredecible", "Sensibilidad extrema", "Desdén por la ley",
+  "Narcisismo resentido", "Empatía dolorosa", "Sed de redención", "Aislamiento voluntario",
+  "Envidia autodestructiva", "Ira contenida", "Idealismo destructivo", "Cobardía oculta",
+  "Tendencia a la autoinculpación", "Obsesión por la verdad", "Amor contradictorio", "Voz interior burlona"
+];
+
+let currentTraits = [];
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function shuffle(arr){ return arr.slice().sort(()=>Math.random()-0.5); }
+
+/* Render de cartas */
+function renderCards(){
+  const area = document.getElementById('cardsArea');
+  area.innerHTML = "";
+  if(currentTraits.length === 0){
+    area.textContent = "Robar cartas para ver rasgos...";
+    return;
+  }
+  currentTraits.forEach((t,i) => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `<div style="font-size:12px;color:var(--muted)">Rasgo ${i+1}</div>
+      <div class="trait">${t}</div>
+      <div style="margin-top:10px;">
+        <button class="btn-ghost" data-idx="${i}" onclick="toggleFix(event)">Fijar</button>
+      </div>`;
+    area.appendChild(div);
+  });
+}
+
+/* Dibuja N cartas */
+function drawCards(n=4){
+  const deck = shuffle(traitDeck);
+  currentTraits = deck.slice(0,n);
+  renderCards();
+}
+
+/* (UI) */
+window.toggleFix = function(e){
+  const btn = e.currentTarget || e.target;
+  const card = btn.closest('.card');
+  const fixed = btn.textContent.includes('Fijado');
+  btn.textContent = fixed ? 'Fijar' : 'Fijado ✓';
+  card.style.border = fixed ? "1px solid rgba(255,255,255,0.03)" : "1px solid rgba(202,168,58,0.6)";
+};
+
+/* Generador de nombres (simples) */
+const nameParts = {
+  first: ["Aleksey","Dmitri","Ivan","Fyodor","Pavel","Nikolai","Mikhail","Sergei","Vladimir","Stepan","Anton","Vasily"],
+  last: ["Raskolnikov","Karamazov","Sokolov","Petrov","Lebedev","Mirov","Zhukov","Orlov","Novikov","Maltsev"]
+};
+function genName(){ return pick(nameParts.first) + " " + pick(nameParts.last); }
+
+/* Generar biografía y conflicto */
+function generateBio(){
+  if(currentTraits.length === 0){ alert("Robar cartas primero."); return; }
+  const name = (document.getElementById('charName').value || genName()).trim();
+  document.getElementById('charName').value = name;
+  const occupation = document.getElementById('occupation').value;
+  const age = 18 + Math.floor(Math.random()*45);
+  const central = currentTraits[Math.floor(Math.random()*currentTraits.length)];
+  const others = currentTraits.filter(t=>t!==central).slice(0,2);
+  const life = `${name}, ${age} años. ${occupation}. Rasgos: ${currentTraits.join(' · ')}.`;
+  const conflict = `Conflicto central: la convergencia de "${central}" con ${others.length>0? '"'+others.join('", "')+'"':''} lo empujan a un choque entre la moral privada y las exigencias del mundo exterior.`;
+  const backstory = `Biografía breve: Creció en un entorno marcado por la escasez y la mirada ajena. Un episodio —pérdida, traición o impulso desesperado— agudizó en él una veta de remordimiento que no se calma. Su vida cotidiana oscila entre gestos de compasión inesperados y decisiones que lo avergüenzan.`;
+  const hooks = [
+    "Guarda una carta sin abrir que teme leer.",
+    "Visita una iglesia en la madrugada, no para rezar del todo, sino para contemplar la luz.",
+    "Se niega a aceptar ayuda pública aunque la necesita.",
+    "Oculta una pequeña mentira que, si se supiera, lo destruiría."
+  ];
+  const hook = pick(hooks);
+  const json = { name, age, occupation, traits: currentTraits.slice(), life, conflict, backstory, hook };
+  window._lastCharacter = json;
+  document.getElementById('characterOutput').textContent = life + "\n\n" + conflict + "\n\n" + backstory + "\n\nGancho: " + hook;
+}
+
+/* Generar monólogo inspirado en los rasgos */
+function generateMonologue(){
+  if(!window._lastCharacter){ alert("Genera la biografía antes."); return; }
+  const c = window._lastCharacter;
+  const opening = `¡Qué vida la mía!, murmura ${c.name} en la penumbra de su cuarto.`;
+  let body = `Me despierta la culpa, esa vieja compañera: ${c.traits.join(', ')}. `;
+  body += "A veces me parece que la ciudad no me mira; otras, que me acusa. (¿Quién, al verme, puede pedir clemencia?) ";
+  body += "No busco excusas; sólo intento comprender si hay una ley que rija este sufrir. ";
+  body += "Si existiera redención, ¿sería para mí o para alguien mejor? ";
+  const close = "(Y sin embargo, algo me empuja a seguir: la costumbre, la culpa, o la esperanza —no lo sé con certeza.)";
+  const monologue = [opening, body, close].join("\n\n");
+  document.getElementById('characterOutput').textContent = monologue;
+}
+
+
+function exportJSON(){
+  if(!window._lastCharacter){ alert("Genera la biografía antes."); return; }
+  const data = JSON.stringify(window._lastCharacter, null, 2);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(data).then(()=> alert("JSON copiado al portapapeles."), ()=> prompt("Copia manualmente:", data));
+  } else {
+    prompt("Copia manualmente:", data);
+  }
+}
+
+
+function copyOutput(){
+  const txt = document.getElementById('characterOutput').textContent;
+  if(!txt) return;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(txt).then(()=> alert("Salida copiada al portapapeles."), ()=> prompt("Copia manualmente:", txt));
+  } else {
+    prompt("Copia manualmente:", txt);
+  }
+}
+
+/* Eventos */
+document.getElementById('draw').addEventListener('click', ()=> drawCards(Number(document.getElementById('numCards').value)));
+document.getElementById('rerollTraits').addEventListener('click', ()=> drawCards(Number(document.getElementById('numCards').value)));
+document.getElementById('genName').addEventListener('click', ()=> { document.getElementById('charName').value = genName(); });
+document.getElementById('generateCharacter').addEventListener('click', generateBio);
+document.getElementById('generateMonologue').addEventListener('click', generateMonologue);
+document.getElementById('exportJSON').addEventListener('click', exportJSON);
+document.getElementById('copyOutput').addEventListener('click', copyOutput);
+
+/* Inicializar */
+document.addEventListener('DOMContentLoaded', ()=> {
+  drawCards(4);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Interactivo: Rocky & Grace</title>
+    <style>
+        :root {
+            --space-bg: #0b0d17;
+            --eridian-yellow: #f4d03f;
+            --grace-blue: #3498db;
+        }
+
+        body {
+            background-color: var(--space-bg);
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #console {
+            width: 80%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border: 2px solid var(--grace-blue);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .message { margin-bottom: 15px; line-height: 1.4; }
+        .rocky { color: var(--eridian-yellow); font-weight: bold; }
+        .grace { color: var(--grace-blue); font-weight: bold; }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--eridian-yellow);
+            color: var(--eridian-yellow);
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: var(--eridian-yellow);
+            color: black;
+        }
+
+        #visualizer {
+            width: 100%;
+            height: 50px;
+            background: #000;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .bar {
+            width: 5px;
+            height: 20px;
+            background: var(--eridian-yellow);
+            position: absolute;
+            bottom: 0;
+            transition: height 0.1s;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🚀 Proyecto Hail Mary</h1>
+
+    <div id="console">
+        <div id="display">
+            <div class="message grace">[SISTEMA]: Conexión establecida con el casco del Hail Mary.</div>
+            <div class="message rocky">Rocky: *Silbido melódico ascendente*</div>
+        </div>
+        <div id="visualizer"></div>
+    </div>
+
+    <div class="controls">
+        <button onclick="sendSignal('🎵 Do-Mi-Sol', '¿Pregunta? ¿Tú sientes miedo?')">Preguntar sobre miedo</button>
+        <button onclick="sendSignal('🎶 Re-Fa-La', '¡Fascinante! Somos amigos.')">Decir que somos amigos</button>
+        <button onclick="sendSignal('🎵 Sol-Si-Re', '¿Observación? El combustible es Xenón.')">Hablar de ciencia</button>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+
+        function sendSignal(tones, translation) {
+            // Efecto de sonido simulado (puedes usar AudioContext si quieres sonido real)
+            createBars();
+
+            // Mensaje de Grace
+            const msgGrace = document.createElement('div');
+            msgGrace.className = 'message grace';
+            msgGrace.innerHTML = `Grace: Enviando frecuencias... (${tones})`;
+            display.appendChild(msgGrace);
+
+            // Respuesta de Rocky retardada
+            setTimeout(() => {
+                const responses = [
+                    "Rocky: *Acorde vibrante* (¡Felicidad! ¡Felicidad! ¡Felicidad!)",
+                    "Rocky: *Silbido bajo* (Entiendo. Tú eres inteligente. Yo soy inteligente.)",
+                    "Rocky: *Claqueo metálico* (Cuestión: ¿Tú tener sueño? Yo no dormir.)"
+                ];
+                const randomResp = responses[Math.floor(Math.random() * responses.length)];
+
+                const msgRocky = document.createElement('div');
+                msgRocky.className = 'message rocky';
+                msgRocky.innerHTML = randomResp;
+                display.appendChild(msgRocky);
+
+                // Auto-scroll
+                display.scrollTop = display.scrollHeight;
+            }, 1000);
+        }
+
+        function createBars() {
+            const visualizer = document.getElementById('visualizer');
+            visualizer.innerHTML = '';
+            for(let i=0; i<30; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.left = (i * 20) + 'px';
+                bar.style.height = Math.random() * 50 + 'px';
+                visualizer.appendChild(bar);
+            }
+        }
+    </script>
+</body>
+</html>
