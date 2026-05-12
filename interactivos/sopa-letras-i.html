@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <link rel="icon" href="../favicon/jellyfish-galaxy-ico.ico" type="image/ico">
+  
+  <title>Sopa de letras infinita — palabras aleatorias</title>
+  <style>
+    :root {
+      /* Jellyfish Galaxy Palette + Dostoievski Mood */
+      --bg: #0d0a14;
+      --panel: #16121f;
+      --card: #1f1a2e;
+      --text: #e0def4;
+      --muted: #a098b5;
+      --accent: #ff00ff; /* Rosa neón (Jellyfish) */
+      --accent-secondary: #00f2ff; /* Cian eléctrico */
+      --found: #00f2ff;
+      --select: rgba(255, 0, 255, 0.2);
+      --border: rgba(255, 0, 255, 0.15);
+
+      --font-serif: "Georgia", "Times New Roman", serif;
+      --font-sans: "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 50% 50%, rgba(255, 0, 255, 0.05) 0%, transparent 80%),
+        url("https://www.transparenttextures.com/patterns/stardust.png"); /* Textura estelar/antigua */
+      color: var(--text);
+      font-family: var(--font-sans);
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #wrap {
+      width: 1200px;
+      max-width: 100%;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    /* Adorno de esquina Jellyfish */
+    #wrap::before {
+      content: "◈";
+      position: absolute;
+      top: 10px; left: 10px;
+      color: var(--accent);
+      font-size: 18px;
+    }
+
+    header {
+      padding: 25px;
+      border-bottom: 2px double var(--border);
+      text-align: center;
+      background: linear-gradient(180deg, rgba(22, 18, 31, 0.8) 0%, transparent 100%);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 24px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+    }
+
+    .small {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--accent-secondary);
+      opacity: 0.8;
+    }
+
+    /* Controles con estética de botones de tu sitio */
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 15px;
+    }
+
+    button, select {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--accent-secondary);
+      padding: 8px 16px;
+      border-radius: 0;
+      font-family: var(--font-serif);
+      text-transform: uppercase;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: var(--accent-secondary);
+      color: var(--bg);
+      box-shadow: 0 0 12px var(--accent-secondary);
+    }
+
+    #gameRow {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+      padding: 24px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+    }
+    #side {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 18px;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .card h3 {
+      font-family: var(--font-serif);
+      margin: 0 0 12px 0;
+      color: var(--accent-secondary);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      font-size: 16px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    li {
+      font-family: var(--font-serif);
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 14px;
+    }
+
+    li.found {
+      color: var(--found);
+      text-shadow: 0 0 8px var(--found);
+      font-weight: bold;
+    }
+
+    footer {
+      padding: 15px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      font-family: var(--font-serif);
+      letter-spacing: 1px;
+    }
+
+    @media (max-width: 850px) {
+  #gameRow {
+    grid-template-columns: 1fr;
+  }
+}
+  </style>
+</head>
+<body>
+  <div id="wrap" role="application" aria-label="Sopa de letras infinita con palabras aleatorias">
+    <header>
+      <div>
+        <h1>Sopa de letras infinita — palabras nuevas cada juego</h1>
+        <div class="small">Explora arrastrando para seleccionar palabras. Movimiento: flechas / WASD</div>
+      </div>
+
+      <div class="controls" aria-hidden="false">
+        <button id="newWordsBtn" title="Generar otra selección de palabras">Nuevas palabras</button>
+        <button id="centerBtn" title="Centrar vista">Centrar</button>
+        <button id="hintBtn" title="Mostrar una pista visible">Pista</button>
+        <label class="small" style="align-self:center">Densidad:
+          <select id="density">
+            <option value="0.008">Baja</option>
+            <option value="0.015" selected>Media</option>
+            <option value="0.028">Alta</option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    <div id="gameRow">
+      <div id="leftPanel">
+        <canvas id="canvas" aria-label="Cuadrícula de la sopa de letras"></canvas>
+      </div>
+
+      <aside id="side">
+        <div class="card">
+          <h3>Palabras de esta sesión</h3>
+          <div class="small">Cada partida genera un conjunto distinto de palabras. Se mostrarán aquí las palabras encontradas recientemente.</div>
+          <ul id="foundList" aria-live="polite"></ul>
+        </div>
+
+        <div class="card">
+          <h3>Controles</h3>
+          <ul class="small">
+            <li>Flechas / WASD: desplazar</li>
+            <li>Click + arrastrar: seleccionar letras (trayectoria contigua)</li>
+            <li>Doble clic: centrar en la celda</li>
+            <li>R: regenerar palabras (nueva sesión)</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Ajustes visuales</h3>
+          <div class="small">Modo cómodo para la vista: colores suaves y contraste moderado.</div>
+          <div style="margin-top:8px">
+            <label class="small">Tamaño celda:
+              <input id="cellSize" type="number" min="20" max="72" step="2" value="44" style="width:90px; margin-left:8px">
+            </label>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>Palabras aleatorias y cuadrícula infinita — fácil para la vista.</footer>
+  </div>
+
+<script>
+
+/* ---------- Config y estado ---------- */
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { alpha: true });
+const newWordsBtn = document.getElementById('newWordsBtn');
+const centerBtn = document.getElementById('centerBtn');
+const hintBtn = document.getElementById('hintBtn');
+const densitySelect = document.getElementById('density');
+const foundList = document.getElementById('foundList');
+const cellSizeInput = document.getElementById('cellSize');
+
+let cellSize = parseInt(cellSizeInput.value, 10) || 44;
+let colsOnScreen = 0, rowsOnScreen = 0;
+let offsetX = -8, offsetY = -6;
+
+let sessionSeed = Math.floor(Math.random() * 1e9) >>> 0; // cambia cada "sesión"
+let placementProb = parseFloat(densitySelect.value); // probabilidad base para iniciar palabras
+
+// Words pool: lista amplia; seleccionamos aleatoriamente por sesión
+const WORD_BANK = [
+  // ~150 palabras comunes y temáticas (español). Puedes ampliar fácilmente.
+  "SOL","LUNA","ESTRELLA","CIELO","MAR","RÍO","LAGO","MONTAÑA","VALLE","ISLA",
+  "ÁRBOL","FLOR","HOJA","RAÍZ","FRUTO","FLORECER","RAÍZ","HOY","AYER","MAÑANA",
+  "CASA","PUERTA","VENTANA","PARED","SUELO","TECHO","CAMINO","CALLE","PLAZA","PUENTE",
+  "PERRO","GATO","PAJARO","PEZ","CABALLO","RATÓN","ELEFANTE","LEÓN","TIGRE","OSO",
+  "LIBRO","PÁGINA","LÁPIZ","GOMA","ESCRIBIR","DIBUJO","PINTURA","MÚSICA","CANTO","RITMO",
+  "AMIGO","FAMILIA","MAMÁ","PAPÁ","HERMANO","HERMANA","ABUELO","ABUELA","NIÑO","NIÑA",
+  "JUGAR","CORRER","SALTAR","BAILAR","REIR","SONREÍR","SOÑAR","APRENDER","ESCUELA","MAESTRO",
+  "COCHE","BICICLETA","AUTOBÚS","TREN","AVIÓN","NAVE","BARCO","MOTO","CAMIÓN","TAXI",
+  "FRUTA","MANZANA","NARANJA","PLÁTANO","FRESA","UVA","PERA","MANGO","CEREZA","MELÓN",
+  "VERDE","AZUL","ROJO","AMARILLO","MORADO","NEGRO","BLANCO","GRIS","MARRÓN","ROSADO",
+  "COMER","BEBER","CENAR","DESAYUNAR","MERENDAR","COCINAR","HERVIR","ASAR","SAL","AZÚCAR",
+  "TIEMPO","HORARIO","TEMPORADA","ESTACIÓN","VERANO","INVIERNO","OTOÑO","PRIMAVERA","HORA","MINUTO",
+  "ENERGÍA","LUZ","SOMBRA","CALOR","FRÍO","VIENTO","LLUVIA","NIEVE","CLIMA","NUBE",
+  "AMOR","PAZ","ALEGRÍA","TRISTEZA","MIEDO","VALOR","SUEÑO","META","JARDÍN","PLANTA",
+  "CIUDAD","PUEBLO","BARRIO","MERCADO","TIENDA","HOSPITAL","BIBLIOTECA","TEATRO","CINE","MUSEO",
+  "TECNOLOGÍA","ORDENADOR","TELÉFONO","TECLADO","PANTALLA","APP","CÓDIGO","PROGRAMA","INTERNET","ROBOT",
+  "NATURALEZA","ECOSISTEMA","ANIMAL","BIOMA","HÁBITAT","SILVESTRE","JARDÍNERA","SEMILLA","TALLO","RAÍZ"
+];
+
+// words selected for this session (random sample)
+let sessionWords = []; // array of uppercase words
+const MAX_SESSION_WORDS = 80;
+
+// found words storage (keeps discovered words in current session)
+let foundWords = []; // entries: {word, startX, startY, dirIndex, len}
+
+/* ---------- PRNG determinista por sesión ---------- */
+// Usamos mulberry32 para reproducibilidad dentro de la sesión
+function mulberry32(seed) {
+  return function() {
+    seed |= 0;
+    seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+}
+// Creamos una función para generar un número pseudoaleatorio determinista
+function sessionRng(...args) {
+  // combinamos sessionSeed con args para crear un numeric seed
+  let s = sessionSeed >>> 0;
+  for (let a of args) {
+    const v = typeof a === 'number' ? (a >>> 0) : hashString(String(a));
+    s = (s ^ v) >>> 0;
+    s = (Math.imul(s, 0x5bd1e995) + 0x6b) >>> 0;
+  }
+  const r = mulberry32(s);
+  return r();
+}
+function hashString(str) {
+  // simple FNV-1a-ish mix returning 32-bit unsigned
+  let h = 2166136261 >>> 0;
+  for (let i=0;i<str.length;i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h;
+}
+
+/* ---------- Maze-word placement logic (infinite) ---------- */
+/* Direcciones (8 direcciones) */
+const DIRS = [
+  {name:'E', dx:1, dy:0},
+  {name:'NE', dx:1, dy:-1},
+  {name:'N', dx:0, dy:-1},
+  {name:'NW', dx:-1, dy:-1},
+  {name:'W', dx:-1, dy:0},
+  {name:'SW', dx:-1, dy:1},
+  {name:'S', dx:0, dy:1},
+  {name:'SE', dx:1, dy:1}
+];
+
+const ALPHABET = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
+function letterAt(x,y) {
+  // Si la celda es cubierta por una palabra, devolvemos la letra de la palabra
+  const cover = getCoveringWordForCell(x,y);
+  if (cover) return cover.letter;
+  // Si no, letra pseudoaleatoria basada en coords y sessionSeed
+  const r = Math.floor(sessionRng('letter', x, y) * ALPHABET.length);
+  return ALPHABET[r % ALPHABET.length];
+}
+
+/* Decide si hay una palabra iniciando en (sx,sy) con dirección dirIndex.
+   Aquí usamos sessionRng(sx,sy,dirIndex) para garantizar que la colocación es
+   reproducible durante la sesión, pero cambia en la siguiente sesión.
+*/
+function placedWordAt(sx, sy, dirIndex) {
+  const p = sessionRng('place', sx, sy, dirIndex);
+  if (p > placementProb) return null;
+  // elegimos una palabra aleatoria de sessionWords para este inicio
+  const wi = Math.floor(sessionRng('word', sx, sy, dirIndex) * sessionWords.length);
+  return sessionWords[wi];
+}
+
+/* Para saber si una celda (x,y) está cubierta por alguna palabra visible:
+   buscamos inicios cercanos (hasta maxWordLen-1) en todas las direcciones
+   (mismo enfoque que en versiones anteriores). */
+const maxWordLen = 18; // límite práctico para búsqueda (se pueden ajustar)
+function getCoveringWordForCell(x,y) {
+  for (let dirIndex=0; dirIndex<DIRS.length; dirIndex++){
+    const dir = DIRS[dirIndex];
+    for (let k=0; k<maxWordLen; k++){
+      const sx = x - dir.dx * k;
+      const sy = y - dir.dy * k;
+      const w = placedWordAt(sx, sy, dirIndex);
+      if (!w) continue;
+      if (k >= 0 && k < w.length) {
+        return { word: w, startX: sx, startY: sy, dirIndex, indexInWord: k, letter: w[k] };
+      }
+    }
+  }
+  return null;
+}
+
+/* ---------- Session word selection (aleatoria cada vez) ---------- */
+function pickSessionWords() {
+  // Mezclamos BANK y elegimos primeros N distintos
+  const bank = WORD_BANK.slice();
+  // shuffle with sessionRng
+  for (let i = bank.length - 1; i > 0; i--) {
+    const j = Math.floor(sessionRng('shuffle', i) * (i + 1));
+    [bank[i], bank[j]] = [bank[j], bank[i]];
+  }
+  const count = Math.min(MAX_SESSION_WORDS, Math.max(20, Math.floor(sessionRng('count') * MAX_SESSION_WORDS)));
+  sessionWords = bank.slice(0, count).map(s => s.toUpperCase());
+  // adapt maxWordLen for efficiency
+  const longest = sessionWords.reduce((m, w) => Math.max(m, w.length), 0);
+  // set global maxWordLen bounded
+  // (we use local constant above for loop limit; okay to keep as is)
+  // but we can update maxWordLen variable if we wanted; keep static for simplicity
+}
+
+/* ---------- UI, drawing y eventos ---------- */
+function resizeCanvas() {
+  const rect = canvas.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = rect.width * ratio;
+  canvas.height = (window.innerHeight - rect.top - 30) * ratio;
+  canvas.style.height = (window.innerHeight - rect.top - 30) + 'px';
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+  colsOnScreen = Math.ceil(rect.width / cellSize) + 2;
+  rowsOnScreen = Math.ceil(parseFloat(canvas.style.height) / cellSize) + 2;
+  draw();
+}
+window.addEventListener('resize', resizeCanvas);
+
+function drawBackground() {
+  // simple soft gradient background (already provided by CSS but draw to canvas area)
+  const w = canvas.clientWidth;
+  const h = parseFloat(canvas.style.height);
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, 'rgba(232,243,242,0.85)');
+  g.addColorStop(1, 'rgba(224,238,236,0.85)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  // very subtle helper grid (low contrast)
+  ctx.strokeStyle = 'rgba(8,50,50,0.02)';
+  ctx.lineWidth = 1;
+  const step = Math.max(26, Math.round(cellSize / 2));
+  for (let x = 0; x < w; x += step) {
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
+  }
+  for (let y = 0; y < h; y += step) {
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+  }
+}
+
+function draw() {
+  drawBackground();
+
+  const viewW = canvas.clientWidth;
+  const viewH = parseFloat(canvas.style.height);
+  const viewCols = Math.ceil(viewW / cellSize) + 2;
+  const viewRows = Math.ceil(viewH / cellSize) + 2;
+
+  ctx.save();
+  ctx.translate(0,0);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `${Math.floor(cellSize * 0.62)}px Inter, sans-serif`;
+
+  for (let r = 0; r < viewRows; r++) {
+    for (let c = 0; c < viewCols; c++) {
+      const gx = c + offsetX;
+      const gy = r + offsetY;
+      const px = c * cellSize;
+      const py = r * cellSize;
+
+      // cell background (soft)
+      ctx.fillStyle = 'rgba(247,250,249,0.95)';
+      ctx.fillRect(px + 3, py + 3, cellSize - 6, cellSize - 6);
+
+      const cover = getCoveringWordForCell(gx, gy);
+      const ch = letterAt(gx, gy);
+
+      // found highlight
+      let foundHighlight = false;
+      if (cover) {
+        const key = `${cover.startX},${cover.startY},${cover.dirIndex},${cover.word.length}`;
+        if (foundWords.some(f => `${f.startX},${f.startY},${f.dirIndex},${f.len}` === key)) foundHighlight = true;
+      }
+
+      // selection highlight
+      const inSel = selPath.some(p => p.x === gx && p.y === gy);
+      if (foundHighlight) {
+        ctx.fillStyle = 'rgba(60,166,120,0.14)';
+        ctx.fillRect(px + 3, py + 3, cellSize - 6, cellSize - 6);
+      } else if (inSel) {
+        ctx.fillStyle = 'rgba(224,140,90,0.20)';
+        ctx.fillRect(px + 3, py + 3, cellSize - 6, cellSize - 6);
+      }
+
+      // letter
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+      ctx.lineWidth = 1;
+      ctx.strokeText(ch, px + cellSize / 2, py + cellSize / 2 + 1);
+      ctx.fillStyle = '#0f3b3a';
+      ctx.fillText(ch, px + cellSize / 2, py + cellSize / 2 + 1);
+
+      // subtle border
+      ctx.strokeStyle = 'rgba(8,50,50,0.04)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px + 2, py + 2, cellSize - 4, cellSize - 4);
+    }
+  }
+
+  // draw selection path
+  if (selPath.length > 0) {
+    ctx.beginPath();
+    ctx.lineWidth = Math.max(5, cellSize * 0.12);
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(224,140,90,0.92)';
+    for (let i=0; i<selPath.length; i++){
+      const p = selPath[i];
+      const px = (p.x - offsetX) * cellSize + cellSize / 2;
+      const py = (p.y - offsetY) * cellSize + cellSize / 2;
+      if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+  }
+
+  // hint animation (if any)
+  if (hintPath && hintExpiry) {
+    const t = Date.now();
+    const fade = Math.max(0, (hintExpiry - t) / 1400);
+    for (let i=0;i<hintPath.length;i++){
+      const p = hintPath[i];
+      const cx = (p.x - offsetX) * cellSize + cellSize/2;
+      const cy = (p.y - offsetY) * cellSize + cellSize/2;
+      ctx.fillStyle = `rgba(224,180,120,${0.18 * fade})`;
+      ctx.fillRect(cx - cellSize*0.36, cy - cellSize*0.36, cellSize*0.72, cellSize*0.72);
+    }
+    if (t > hintExpiry) { hintPath = null; hintExpiry = 0; }
+    else requestAnimationFrame(draw);
+  }
+
+  ctx.restore();
+}
+
+/* ---------- Interacción: selección, pan, control ---------- */
+let selecting = false;
+let selPath = [];
+let lastMouseCell = null;
+
+// mouse -> cell coords
+function mouseToCell(mx, my) {
+  const rect = canvas.getBoundingClientRect();
+  const x = mx - rect.left;
+  const y = my - rect.top;
+  const cx = Math.floor(x / cellSize) + offsetX;
+  const cy = Math.floor(y / cellSize) + offsetY;
+  return { x: cx, y: cy };
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  selecting = true;
+  selPath = [];
+  const c = mouseToCell(e.clientX, e.clientY);
+  selPath.push(c);
+  lastMouseCell = c;
+  draw();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!selecting) return;
+  const c = mouseToCell(e.clientX, e.clientY);
+  if (!lastMouseCell || c.x !== lastMouseCell.x || c.y !== lastMouseCell.y) {
+    const last = selPath[selPath.length-1];
+    const dx = c.x - last.x, dy = c.y - last.y;
+    if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
+      if (!selPath.some(p => p.x === c.x && p.y === c.y)) selPath.push(c);
+      lastMouseCell = c;
+      draw();
+    }
+  }
+});
+window.addEventListener('mouseup', () => {
+  if (!selecting) return;
+  selecting = false;
+  checkSelection();
+  selPath = [];
+  draw();
+});
+
+// touch
+canvas.addEventListener('touchstart', (ev) => {
+  ev.preventDefault();
+  selecting = true;
+  selPath = [];
+  const t = ev.touches[0];
+  const c = mouseToCell(t.clientX, t.clientY);
+  selPath.push(c);
+  lastMouseCell = c;
+  draw();
+}, { passive: false });
+window.addEventListener('touchmove', (ev) => {
+  if (!selecting) return;
+  ev.preventDefault();
+  const t = ev.touches[0];
+  const c = mouseToCell(t.clientX, t.clientY);
+  const last = selPath[selPath.length-1];
+  if (Math.abs(c.x - last.x) <= 1 && Math.abs(c.y - last.y) <= 1 && !selPath.some(p => p.x === c.x && p.y === c.y)) {
+    selPath.push(c); lastMouseCell = c; draw();
+  }
+}, { passive: false });
+window.addEventListener('touchend', (ev) => { if (selecting) { selecting = false; checkSelection(); selPath = []; draw(); } });
+
+// keyboard pan & shortcuts
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { offsetX -= 1; draw(); }
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { offsetX += 1; draw(); }
+  if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') { offsetY -= 1; draw(); }
+  if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') { offsetY += 1; draw(); }
+  if (e.key === 'r' || e.key === 'R') { startNewSession(); }
+});
+
+centerBtn.addEventListener('click', () => { offsetX = -Math.floor(colsOnScreen/2); offsetY = -Math.floor(rowsOnScreen/2); draw(); });
+
+cellSizeInput.addEventListener('change', () => {
+  const cs = parseInt(cellSizeInput.value, 10);
+  if (!Number.isNaN(cs) && cs >= 20 && cs <= 72) {
+    cellSize = cs;
+    resizeCanvas();
+  }
+});
+
+densitySelect.addEventListener('change', () => {
+  placementProb = parseFloat(densitySelect.value);
+  // redraw so placement uses new density for hints/visualization
+  draw();
+});
+
+/* ---------- Selection check: coincidencia con palabra ---------- */
+function checkSelection() {
+  if (selPath.length === 0) return;
+  const letters = selPath.map(p => {
+    const cov = getCoveringWordForCell(p.x, p.y);
+    return cov ? cov.letter : letterAt(p.x, p.y);
+  }).join('');
+  const rev = letters.split('').reverse().join('');
+  const matchWord = sessionWords.find(w => w === letters) || sessionWords.find(w => w === rev);
+  if (matchWord) {
+    // determine canonical start and direction
+    let isRev = (matchWord === rev);
+    let start = isRev ? selPath[selPath.length-1] : selPath[0];
+    let next = isRev ? selPath[selPath.length-2] || selPath[selPath.length-1] : selPath[1] || selPath[0];
+    let dx = next.x - start.x, dy = next.y - start.y;
+    let dirIndex = DIRS.findIndex(d => d.dx === dx && d.dy === dy);
+    if (dirIndex < 0) dirIndex = 0;
+    const key = `${start.x},${start.y},${dirIndex},${matchWord.length}`;
+    if (!foundWords.some(f => `${f.startX},${f.startY},${f.dirIndex},${f.len}` === key)) {
+      foundWords.unshift({ word: matchWord, startX: start.x, startY: start.y, dirIndex, len: matchWord.length });
+      updateFoundList();
+    }
+  } else {
+    // no match: gentle visual feedback could be added
+  }
+}
+
+/* ---------- Hint (resalta una palabra visible no encontrada) ---------- */
+let hintPath = null;
+let hintExpiry = 0;
+hintBtn.addEventListener('click', () => showHint());
+
+function showHint() {
+  // scan visible area for an undiscovered word and highlight it briefly
+  const viewW = canvas.clientWidth;
+  const viewH = parseFloat(canvas.style.height);
+  const viewCols = Math.ceil(viewW / cellSize) + 2;
+  const viewRows = Math.ceil(viewH / cellSize) + 2;
+  const candidates = [];
+
+  for (let r = 0; r < viewRows; r++) {
+    for (let c = 0; c < viewCols; c++) {
+      const gx = c + offsetX;
+      const gy = r + offsetY;
+      for (let dirIndex = 0; dirIndex < DIRS.length; dirIndex++) {
+        const w = placedWordAt(gx, gy, dirIndex);
+        if (!w) continue;
+        const key = `${gx},${gy},${dirIndex},${w.length}`;
+        if (!foundWords.some(f => `${f.startX},${f.startY},${f.dirIndex},${f.len}` === key)) {
+          // build path
+          const path = [];
+          let cx = gx, cy = gy;
+          for (let i=0;i<w.length;i++){ path.push({x:cx,y:cy}); cx += DIRS[dirIndex].dx; cy += DIRS[dirIndex].dy; }
+          candidates.push({ path, word: w });
+        }
+      }
+    }
+  }
+
+  if (candidates.length === 0) {
+    // nothing visible; small feedback by briefly flashing hint button
+    hintBtn.textContent = 'Pista (no visible)';
+    setTimeout(() => hintBtn.textContent = 'Pista', 900);
+    return;
+  }
+  const pick = candidates[Math.floor(sessionRng('hint', Date.now()) * candidates.length)];
+  hintPath = pick.path;
+  hintExpiry = Date.now() + 1400;
+  draw();
+}
+
+/* ---------- Utilities: update UI ---------- */
+function updateFoundList() {
+  foundList.innerHTML = '';
+  for (const f of foundWords.slice(0, 80)) {
+    const li = document.createElement('li');
+    li.textContent = `${f.word} @ (${f.startX}, ${f.startY})`;
+    li.className = 'found';
+    foundList.appendChild(li);
+  }
+}
+
+/* ---------- Session control: iniciar nueva sesión con palabras aleatorias ---------- */
+function startNewSession() {
+  sessionSeed = Math.floor(Math.random() * 1e9) >>> 0;
+  // recompute rng-driven things
+  placementProb = parseFloat(densitySelect.value);
+  pickSessionWords();
+  foundWords = [];
+  selPath = [];
+  hintPath = null; hintExpiry = 0;
+  updateFoundList();
+  draw();
+}
+
+// new words button
+newWordsBtn.addEventListener('click', () => { startNewSession(); });
+
+// double click centers on the clicked cell
+canvas.addEventListener('dblclick', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left, y = e.clientY - rect.top;
+  const cellX = Math.floor(x / cellSize) + offsetX;
+  const cellY = Math.floor(y / cellSize) + offsetY;
+  offsetX = cellX - Math.floor(colsOnScreen/2);
+  offsetY = cellY - Math.floor(rowsOnScreen/2);
+  draw();
+});
+
+// wheel to pan vertically/horizontally a little
+canvas.addEventListener('wheel', (e) => {
+  if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) offsetX += Math.sign(e.deltaX);
+  else offsetY += Math.sign(e.deltaY);
+  draw();
+  e.preventDefault();
+}, { passive: false });
+
+// minimal init
+resizeCanvas();
+startNewSession();
+updateFoundList();
+
+// prevent accidental text selection while dragging
+document.body.addEventListener('mousedown', e => e.preventDefault());
+</script>
+</body>
+</html>
