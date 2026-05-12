@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- FAVICON -->
+    <link rel="icon" href="favicon/jellyfish-galaxy-ico.ico" type="image/ico">
+
     <title>Blog Log | Jellyfish Galaxy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -71,14 +75,10 @@
 </head>
 <body class="p-6 md:p-12">
 
-    <nav class="mb-12 flex justify-between items-center">
-        <a href="index.html" class="font-black text-2xl tracking-tighter hover:skew-x-6 transition-transform">
-            <span class="text-cyan-400">JELLYFISH</span> GALAXY
-        </a>
-        <a href="index.html" class="nav-link font-bold uppercase text-sm border-2 border-white px-4 py-2">
-            Volver al Home
-        </a>
-    </nav>
+  <nav class="mb-12 flex justify-between items-center">
+      <a href="index.html" class="font-black text-2xl tracking-tighter text-cyan-400">JELLYFISH GALAXY</a>
+      <a href="index.html" class="font-bold uppercase text-sm border-2 border-white px-4 py-2 hover:bg-white hover:text-black transition-all">Home</a>
+  </nav>
 
     <article class="max-w-5xl mx-auto">
         <header class="mb-12">
@@ -182,13 +182,14 @@ Mi primer encuentro con <strong>Radio Kaikan</strong> no fue solo una visita tur
         </div>
 
         <footer class="mt-20 pt-8 border-t-4 border-white">
-            <h3 class="text-2xl font-black mb-8">LOGS_RELACIONADOS</h3>
+            <h3 class="text-2xl font-black mb-8 italic">LOGS_RELACIONADOS</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <a href="#" class="neo-card p-6 flex justify-between items-center hover:bg-white hover:text-black group transition-colors">
-                    <span class="font-bold uppercase tracking-widest">Post_Anterior</span>
-                    <span class="group-hover:translate-x-2 transition-transform">←</span>
-                </a>
-                <a href="#" class="neo-card p-6 flex justify-between items-center hover:bg-white hover:text-black group transition-colors" style="box-shadow: 8px 8px 0px #00c8ff;">
+                <div class="neo-card p-6 opacity-30 flex justify-between items-center cursor-not-allowed">
+                    <span class="font-bold uppercase tracking-widest">Inicio_de_Transmisión</span>
+                    <span class="grayscale">←</span>
+                </div>
+
+                <a href="poem-1.html" class="neo-card p-6 flex justify-between items-center hover:bg-white hover:text-black group transition-colors" style="box-shadow: 8px 8px 0px #00c8ff;">
                     <span class="font-bold uppercase tracking-widest">Post_Siguiente</span>
                     <span class="group-hover:translate-x-2 transition-transform">→</span>
                 </a>
