@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Prix de Ángel - F1 Quiz</title>
+    <style>
+        /* --- ESTILOS TIPO FÓRMULA 1 --- */
+        :root {
+            --f1-red: #e10600;
+            --f1-dark: #15151e;
+            --f1-card: #2b2b3b;
+            --f1-green: #2ecc71;
+            --white: #ffffff;
+            --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --font-f1: 'Arial Black', 'Helvetica Bold', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--f1-dark);
+            background-image:
+                linear-gradient(45deg, #111 25%, transparent 25%),
+                linear-gradient(-45deg, #111 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #111 75%),
+                linear-gradient(-45deg, transparent 75%, #111 75%);
+            background-size: 6px 6px;
+            color: var(--white);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 15px;
+        }
+
+        .pit-wall-container {
+            background-color: var(--f1-card);
+            width: 100%;
+            max-width: 520px;
+            border-radius: 18px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            overflow: hidden;
+            border: 2px solid #3d3d4e;
+            position: relative;
+        }
+
+        /* Bandera a cuadros superior */
+        .pit-wall-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 12px;
+            background: repeating-linear-gradient(
+                -45deg,
+                #000,
+                #000 10px,
+                #fff 10px,
+                #fff 20px
+            );
+            z-index: 10;
+        }
+
+        .header {
+            background-color: #0d0d13;
+            padding: 30px 20px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--f1-red);
+            position: relative;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-family: var(--font-f1);
+            text-transform: uppercase;
+            font-style: italic;
+            font-size: 22px;
+            letter-spacing: -0.5px;
+            color: var(--white);
+        }
+
+        .lap-indicator {
+            display: inline-block;
+            background-color: var(--f1-red);
+            color: var(--white);
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+
+        .quiz-body {
+            padding: 30px 20px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            line-height: 1.4;
+            text-align: center;
+            color: #f1f1f1;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            counter-reset: driver-counter;
+        }
+
+        .option-btn {
+            background-color: #1f1f2b;
+            border: 2px solid #444456;
+            color: var(--white);
+            padding: 16px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: var(--font-f1);
+            text-transform: uppercase;
+            font-style: italic;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            text-align: left;
+            width: 100%;
+        }
+
+        .option-btn::before {
+            content: 'P' counter(driver-counter);
+            counter-increment: driver-counter;
+            background-color: var(--f1-red);
+            color: white;
+            font-style: normal;
+            font-weight: bold;
+            font-size: 10px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            margin-right: 10px;
+            font-family: monospace;
+            flex-shrink: 0;
+        }
+
+        .option-btn:hover {
+            background-color: #2f2f42;
+            border-color: var(--f1-red);
+            transform: translateY(-2px);
+        }
+
+        /* Modificadores de estado */
+        .option-btn.correct {
+            background-color: var(--f1-green) !important;
+            border-color: #27ae60 !important;
+            color: #000 !important;
+            animation: pulseCorrect 0.4s ease;
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--f1-red) !important;
+            border-color: #a00 !important;
+            animation: shakeIncorrect 0.4s ease;
+        }
+
+        /* Pantallas */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        /* Pantalla Final */
+        #final-screen {
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .trophy-badge {
+            font-size: 70px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .champ-title {
+            font-family: var(--font-f1);
+            color: var(--f1-green);
+            font-style: italic;
+            font-size: 28px;
+            margin: 10px 0;
+            text-transform: uppercase;
+        }
+
+        .final-message {
+            font-size: 17px;
+            color: #ddd;
+            line-height: 1.5;
+            margin: 15px 0 25px;
+        }
+
+        .stat-box {
+            background: #191924;
+            border: 1px solid #3d3d4e;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #aaa;
+            text-align: left;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .stat-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-value {
+            color: var(--f1-green);
+            font-weight: bold;
+        }
+
+        /* Animaciones */
+        @keyframes shakeIncorrect {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        @keyframes pulseCorrect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pit-wall-container">
+        <div class="header">
+            <h1>GRAND PRIX DEL AMOR</h1>
+            <div id="lap-counter" class="lap-indicator">VUELTA 1 DE 3</div>
+        </div>
+
+        <div class="quiz-body">
+
+            <!-- PREGUNTA 1 -->
+            <div id="q1" class="screen active">
+                <p class="question-text">¿Quién es el chico más increíble de todos?</p>
+                <div class="options-container">
+                    <button class="option-btn" onclick="answer(this, false)">L. Hamilton</button>
+                    <button class="option-btn" onclick="answer(this, true)">Ángel</button>
+                    <button class="option-btn" onclick="answer(this, false)">M. Verstappen</button>
+                    <button class="option-btn" onclick="answer(this, false)">C. Leclerc</button>
+                </div>
+            </div>
+
+            <!-- PREGUNTA 2 -->
+            <div id="q2" class="screen">
+                <p class="question-text">¿Quién está bien guapote?</p>
+                <div class="options-container">
+                    <button class="option-btn" onclick="answer(this, false)">F. Alonso</button>
+                    <button class="option-btn" onclick="answer(this, false)">C. Sainz</button>
+                    <button class="option-btn" onclick="answer(this, false)">S. Pérez</button>
+                    <button class="option-btn" onclick="answer(this, true)">Ángel</button>
+                </div>
+            </div>
+
+            <!-- PREGUNTA 3 -->
+            <div id="q3" class="screen">
+                <p class="question-text">¿Quién es el chico más guapo del universo?</p>
+                <div class="options-container">
+                    <button class="option-btn" onclick="answer(this, true)">Ángel</button>
+                    <button class="option-btn" onclick="answer(this, false)">L. DiCaprio</button>
+                    <button class="option-btn" onclick="answer(this, false)">H. Cavill</button>
+                    <button class="option-btn" onclick="answer(this, false)">B. Pitt</button>
+                </div>
+            </div>
+
+            <!-- PANTALLA FINAL DE VICTORIA -->
+            <div id="final-screen" class="screen">
+                <span class="trophy-badge">🏆</span>
+                <h2 class="champ-title">¡CAMPEÓN DEL MUNDO!</h2>
+                <p class="final-message">
+                    ¡Pole Position y Victoria Absoluta!<br>
+                    No hay duda en la telemetría:<br>
+                    <strong>¡Ángel es el #1 en todos los aspectos!</strong> ❤️🏎️
+                </p>
+
+                <div class="stat-box">
+                    <div class="stat-line"><span>PILOTO:</span> <span class="stat-value">ÁNGEL</span></div>
+                    <div class="stat-line"><span>TIEMPO DE VUELTA:</span> <span class="stat-value">PERFECTO</span></div>
+                    <div class="stat-line"><span>VENTAJA:</span> <span class="stat-value">+∞ SEGUNDOS</span></div>
+                    <div class="stat-line"><span>ESTADO:</span> <span class="stat-value">EL MÁS GUAPO Y AMADO</span></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        function answer(buttonClicked, isCorrect) {
+            // Deshabilitar botones temporalmente
+            const currentScreen = document.getElementById(`q${currentStep}`);
+            const buttons = currentScreen.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.style.pointerEvents = 'none');
+
+            if (isCorrect) {
+                buttonClicked.classList.add('correct');
+
+                setTimeout(() => {
+                    currentScreen.classList.remove('active');
+                    currentStep++;
+
+                    if (currentStep <= totalSteps) {
+                        // Siguiente pregunta
+                        document.getElementById(`q${currentStep}`).classList.add('active');
+                        document.getElementById('lap-counter').innerText = `VUELTA ${currentStep} DE ${totalSteps}`;
+                    } else {
+                        // Pantalla Final
+                        document.getElementById('lap-counter').innerText = 'GANASTE 🏁';
+                        document.getElementById('lap-counter').style.backgroundColor = '#2ecc71';
+                        document.getElementById('lap-counter').style.color = '#000';
+                        document.getElementById('final-screen').classList.add('active');
+                        launchConfetti();
+                    }
+                }, 700);
+
+            } else {
+                buttonClicked.classList.add('incorrect');
+
+                setTimeout(() => {
+                    alert("⚠️ ¡BOX, BOX, BOX! Telemetría incorrecta. Esa no es la respuesta. ¡Inténtalo de nuevo, campeón!");
+                    buttonClicked.classList.remove('incorrect');
+                    buttons.forEach(btn => btn.style.pointerEvents = 'auto');
+                }, 400);
+            }
+        }
+
+        function launchConfetti() {
+            for (let i = 0; i < 70; i++) {
+                createConfettiPiece();
+            }
+        }
+
+        function createConfettiPiece() {
+            const confetti = document.createElement('div');
+            confetti.classList.add('confetti');
+
+            const colors = ['#e10600', '#ffffff', '#2ecc71', '#f1c40f'];
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+            confetti.style.left = Math.random() * 100 + 'vw';
+
+            const size = Math.random() * 8 + 6 + 'px';
+            confetti.style.width = size;
+            confetti.style.height = size;
+
+            document.body.appendChild(confetti);
+
+            const anim = confetti.animate([
+                { transform: `translate3d(0,0,0) rotate(0deg)`, opacity: 1 },
+                { transform: `translate3d(${(Math.random() - 0.5) * 300}px, 105vh, 0px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+            ], {
+                duration: Math.random() * 2500 + 2000,
+                easing: 'cubic-bezier(0,0,.2,1)'
+            });
+
+            anim.onfinish = () => confetti.remove();
+        }
+    </script>
+</body>
+</html>
